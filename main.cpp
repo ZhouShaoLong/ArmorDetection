@@ -7,7 +7,7 @@ using namespace cv;
 
 int main() {
     ArmorDetection *armor = new ArmorDetection();
-    VideoCapture capture("1.mov");
+    VideoCapture capture("2.mov");
     VideoWriter out;
     Mat input, src;
 
@@ -26,9 +26,9 @@ int main() {
             if (input.empty()) {
                 break;
             }
-            if (!out.isOpened()) {
-                out.open("zsl_1.1.mov", CV_FOURCC('D', 'I', 'V', 'X'), rate, cv::Size(input.cols / 2, input.rows), true);
-            }
+//            if (!out.isOpened()) {
+//                out.open("zsl_1.mov", CV_FOURCC('D', 'I', 'V', 'X'), rate, cv::Size(input.cols / 2, input.rows), true);
+//            }
 
             Point2f center;
             //只保留右侧部分图像
@@ -38,10 +38,11 @@ int main() {
             center = armor->GetArmorCenter();
             cout << center << endl;
 
-            circle(src, center, 10, CV_RGB(0, 0, 0), 2);
-
+            if (center != Point2f(0, 0)) {
+                circle(src, center, 10, CV_RGB(0, 0, 0), 2);
+            }
             imshow("a", src);
-            out.write(src);
+//            out.write(src);
 
             if (waitKey(30) >= 0) {
                 break;

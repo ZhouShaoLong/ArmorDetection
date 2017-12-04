@@ -38,6 +38,7 @@ void ArmorDetection::Pretreatment() {
         }
 
         if ((minRect.size.width * 10 > minRect.size.height)
+            && (minRect.size.width * 1.5 < minRect.size.height)
             && (abs(minRect.angle) < 15)) {     //筛选条件还可以增加，以此来减少后面的处理的矩形数量
             minRects.push_back(minRect);
         }
@@ -68,14 +69,14 @@ Point2f ArmorDetection::GetArmorCenter() {
             //主要根据矩形的 角度、面积、高度差、距离这几个条件来判断
 
             if (leftRect.angle == rightRect.angle) {
-                level += 5;
-            } else if (abs(leftRect.angle - rightRect.angle) < 7) {
+                level += 10;
+            } else if (abs(leftRect.angle - rightRect.angle) < 5) {
+                level += 8;
+            } else if (abs(leftRect.angle - rightRect.angle) < 10) {
+                level += 6;
+            } else if (abs(leftRect.angle - rightRect.angle) < 20) {
                 level += 4;
-            } else if (abs(leftRect.angle - rightRect.angle) < 14) {
-                level += 3;
-            } else if (abs(leftRect.angle - rightRect.angle) < 21) {
-                level += 2;
-            } else if (abs(leftRect.angle - rightRect.angle) < 28) {
+            } else if (abs(leftRect.angle - rightRect.angle) < 30) {
                 level += 1;
             } else {
                 break;
@@ -85,29 +86,29 @@ Point2f ArmorDetection::GetArmorCenter() {
             area[0] = leftRect.size.width * leftRect.size.height;
             area[1] = rightRect.size.width * rightRect.size.height;
             if (area[0] == area[1]) {
-                level += 5;
+                level += 10;
+            } else if (min(area[0], area[1]) * 1.5 > max(area[0], area[1])) {
+                level += 8;
             } else if (min(area[0], area[1]) * 2 > max(area[0], area[1])) {
+                level += 6;
+            } else if (min(area[0], area[1]) * 2.5 > max(area[0], area[1])) {
                 level += 4;
             } else if (min(area[0], area[1]) * 3 > max(area[0], area[1])) {
-                level += 3;
-            } else if (min(area[0], area[1]) * 4 > max(area[0], area[1])) {
-                level += 2;
-            } else if (min(area[0], area[1]) * 5 > max(area[0], area[1])) {
                 level += 1;
             } else {
                 break;
             }
 
+            double half_height = (leftRect.size.height + rightRect.size.height) / 4;
             if (leftRect.center.y == rightRect.center.y) {
-                level += 5;
-            } else if (abs(leftRect.center.y - rightRect.center.y) < 20) {
+                level += 10;
+            } else if (abs(leftRect.center.y - rightRect.center.y) < 0.2 * half_height) {
+                level += 8;
+            } else if (abs(leftRect.center.y - rightRect.center.y) < 0.4 * half_height) {
+                level += 6;
+            } else if (abs(leftRect.center.y - rightRect.center.y) < 0.8 * half_height) {
                 level += 4;
-            } else if (abs(leftRect.center.y - rightRect.center.y) < 40) {
-                level += 3;
-            } else if (abs(leftRect.center.y - rightRect.center.y) < 80) {
-                level += 2;
-            } else if (abs(leftRect.center.y - rightRect.center.y) <
-                       min(leftRect.size.height, rightRect.size.height) / 2) {
+            } else if (abs(leftRect.center.y - rightRect.center.y) < half_height) {
                 level += 1;;
             } else {
                 break;
@@ -115,8 +116,12 @@ Point2f ArmorDetection::GetArmorCenter() {
 
             distance = Distance(leftRect.center, rightRect.center);
             height = (leftRect.size.height + rightRect.size.height) / 2;
-            if (distance != 0) {
-                if (distance < 2 * height) {
+            if (distance != 0 && distance > height) {
+                if (distance < 1.5 * height) {
+                    level += 6;
+                } else if (distance < 1.8 * height) {
+                    level += 4;
+                } else if (distance < 2.4 * height) {
                     level += 2;
                 } else if (distance < 3 * height) {
                     level += 1;
@@ -168,7 +173,7 @@ Point2f ArmorDetection::GetArmorCenter() {
 
 void ArmorDetection::LostTarget() {
     lost++;
-    if (lost < 10) {     //每秒30帧，6帧是0.2秒，最多允许使用0.2秒之前的结果
+    if (lost < 3) {     //每秒30帧，3帧是0.1秒，最多允许使用0.1秒之前的结果
         currentCenter = lastCenter;
     } else {
         currentCenter = Point2f(0, 0);
